@@ -12,6 +12,7 @@ except ImportError:
     from xmlrpc.server import SimpleXMLRPCDispatcher
 
 from defusedxml import xmlrpc
+import sys
 
 # This method makes the XMLRPC parser (used by loads) safe
 # from various XML based attacks
@@ -61,9 +62,11 @@ class XMLRPCDispatcher(SimpleXMLRPCDispatcher):
         except Fault as fault:
             response = dumps(fault, allow_none=self.allow_none,
                              encoding=self.encoding)
-        except Exception:
+        except:
+            # report exception back to server
+            exc_type, exc_value, exc_tb = sys.exc_info()
             response = dumps(
-                Fault(1, 'Unknown error'),
+                Fault(1, "%s:%s" % (exc_type, exc_value)),
                 encoding=self.encoding, allow_none=self.allow_none,
             )
 
